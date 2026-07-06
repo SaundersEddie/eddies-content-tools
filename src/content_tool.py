@@ -4,6 +4,7 @@ import json
 import re
 import urllib.request
 import urllib.error
+import unicodedata
 
 
 CATEGORY_KEYWORDS = {
@@ -100,8 +101,11 @@ def choose_event(events: list[dict]) -> dict | None:
         
 def slugify(text: str) -> str:
     """
-    Create a simple filename-safe slug.
+    Create a filename-safe slug.
+    Converts accented characters where possible.
     """
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
     text = text.lower().strip()
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
@@ -134,6 +138,101 @@ def save_seed_file(selected_event: dict, category: str, month: int, day: int) ->
 
     return output_file
 
+def list_seed_files() -> list[Path]:
+    seeds_dir = Path("drafts/seeds")
+
+    if not seeds_dir.exists():
+        return []
+
+    return sorted(seeds_dir.glob("*.json"))
+
+
+def choose_seed_file(seed_files: list[Path]) -> Path | None:
+    if not seed_files:
+        print("No seed files found.")
+        return None
+
+    print("\nSaved seed files:")
+
+    for index, seed_file in enumerate(seed_files, start=1):
+        print(f"{index}. {seed_file.name}")
+
+    while True:
+        choice = input("Choose a seed file number, or press Enter to cancel: ").strip()
+
+        if not choice:
+            return None
+
+        if choice.isdigit():
+            index = int(choice)
+            if 1 <= index <= len(seed_files):
+                return seed_files[index - 1]
+
+        print("Invalid choice. Try again.")
+
+
+def load_seed_file(seed_file: Path) -> dict:
+    return json.loads(seed_file.read_text(encoding="utf-8"))
+
+
+def build_basic_facebook_draft(seed_data: dict) -> str:
+    year = seed_data.get("year", "Unknown year")
+    description = seed_data.get("description", "No description available.")
+    category = seed_data.get("category", "history")
+    month = seed_data.get("month")
+    day = seed_data.get("day")
+    wikipedia = seed_data.get("wikipedia", [])
+
+    source_lines = []
+
+    for item in wikipedia[:3]:
+        title = item.get("title", "Source")
+        url = item.get("wikipedia", "")
+
+        if url:
+            source_lines.append(f"- {title}: {url}")
+
+    if not source_lines:
+        source_lines.append("- Source needed.")
+
+    return f"""# Facebook Draft
+
+Status: Draft
+Platform: Facebook
+Category: {category}
+Historical Date: {month}/{day}
+Year: {year}
+
+## Post Draft
+
+On this day in {year}:
+
+{description}
+
+A small piece of history, but one worth remembering.
+
+What do you think — interesting, surprising, or one you already knew?
+
+## Sources
+
+{chr(10).join(source_lines)}
+"""
+
+def save_facebook_draft(seed_data: dict, seed_file: Path) -> Path:
+    today = date.today().isoformat()
+    description = seed_data.get("description", "facebook-draft")
+    slug = slugify(description[:80])
+
+    drafts_dir = Path("drafts/facebook")
+    drafts_dir.mkdir(parents=True, exist_ok=True)
+
+    output_file = drafts_dir / f"{today}-{slug}.md"
+    content = build_basic_facebook_draft(seed_data)
+
+    output_file.write_text(content, encoding="utf-8")
+
+    return output_file
+
 
 def main() -> None:
     print("eddies-content-tools")
@@ -148,8 +247,8 @@ def main() -> None:
     day = int(day_input) if day_input else today.day
 
     print("\nCategories:")
-    for category in CATEGORY_KEYWORDS:
-        print(f"- {category}")
+    for category_name in CATEGORY_KEYWORDS:
+        print(f"- {category_name}")
 
     category = input("\nCategory [history]: ").strip().lower() or "history"
 
@@ -164,12 +263,13 @@ def main() -> None:
 
     print(f"\nFound {len(matches)} matching item(s) for {month}/{day} in {category}.\n")
 
-    for index, event in enumerate(matches[:10], start=1):
+    visible_matches = matches[:10]
+
+    for index, event in enumerate(visible_matches, start=1):
         year = event.get("year", "Unknown year")
         description = event.get("description", "No description")
-
         matched_keywords = event.get("_matched_keywords", [])
-        
+
         print(f"{index}. {year} — {description}")
 
         if matched_keywords:
@@ -183,7 +283,7 @@ def main() -> None:
 
         print()
 
-    selected_event = choose_event(matches[:10])
+    selected_event = choose_event(visible_matches)
 
     if not selected_event:
         print("No item selected.")
@@ -194,7 +294,7 @@ def main() -> None:
 
     seed_file = save_seed_file(selected_event, category, month, day)
     print(f"\nSeed saved: {seed_file}")
-
+            
 if __name__ == "__main__":
     main()
     
