@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.venv/
+
+drafts/facebook/*.md
+drafts/linkedin/*.md
+drafts/website/*.md
