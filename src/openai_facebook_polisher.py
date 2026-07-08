@@ -16,6 +16,23 @@ def get_openai_client():
     return OpenAI(api_key=api_key)
 
 
+def clean_facebook_output(text: str) -> str:
+    text = text.strip()
+
+    unwanted_prefixes = [
+        "Facebook Post:",
+        "Final Facebook Post:",
+        "Post:",
+        "AI-Polished Facebook Draft:",
+    ]
+
+    for prefix in unwanted_prefixes:
+        if text.lower().startswith(prefix.lower()):
+            text = text[len(prefix):].strip()
+
+    return text.strip()
+
+
 def polish_facebook_draft(seed_data, raw_draft):
     """
     Takes the saved seed data and the basic factual draft,
@@ -43,6 +60,11 @@ Rules:
 - Add a light engagement question if appropriate.
 - Do not include hashtags unless they are genuinely useful.
 - Do not include source links in the public-facing post text.
+- Return plain text only.
+- Do not use Markdown headings.
+- Do not use bullet points.
+- Do not wrap the response in quotes.
+- Do not include labels like "Facebook Post:".
 
 Category: {category}
 
@@ -57,4 +79,4 @@ Write only the polished Facebook post text.
         input=prompt,
     )
 
-    return response.output_text.strip()
+    return clean_facebook_output(response.output_text)

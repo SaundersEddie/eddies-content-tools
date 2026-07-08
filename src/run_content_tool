@@ -6,8 +6,8 @@ def show_menu() -> None:
     print("\nEddie's Content Tools")
     print("---------------------")
     print("1. Create a new seed from date/category")
-    print("2. Create Facebook draft from saved seed")
-    print("3. Full flow: create seed, then create Facebook draft")
+    print("2. Create Facebook post from saved seed")
+    print("3. Full flow: create seed, then create Facebook post")
     print("4. Quit")
 
 

@@ -23,6 +23,7 @@ CATEGORY_QUESTIONS = {
     "technology": "What old piece of tech do you think changed the world more than people realize?",
 }
 
+
 def slugify(text: str) -> str:
     text = text.lower().strip()
     text = re.sub(r"[^a-z0-9]+", "-", text)
@@ -83,6 +84,7 @@ def get_sources(seed_data: dict) -> str:
 
     return "\n".join(source_lines)
 
+
 def build_draft_title(seed_data: dict) -> str:
     year = seed_data.get("year", "Unknown year")
     description = seed_data.get("description", "Untitled event").rstrip(".")
@@ -94,14 +96,11 @@ def build_draft_title(seed_data: dict) -> str:
 
     return f"On This Day: {description} ({year})"
 
-def build_facebook_draft(seed_data: dict) -> str:
+
+def build_raw_post_draft(seed_data: dict) -> str:
     year = seed_data.get("year", "Unknown year")
     description = seed_data.get("description", "No description available.").rstrip(".")
     category = seed_data.get("category", "history")
-    month = seed_data.get("month", "")
-    day = seed_data.get("day", "")
-    sources = get_sources(seed_data)
-    draft_title = build_draft_title(seed_data)
 
     blurb = CATEGORY_BLURBS.get(
         category,
@@ -113,19 +112,20 @@ def build_facebook_draft(seed_data: dict) -> str:
         "What do you think — interesting, surprising, or one you already knew?",
     )
 
-    raw_post_draft = f"""On this day in {year}, {description}.
+    return f"""On this day in {year}, {description}.
 
 {blurb}
 
 {question}"""
 
-    try:
-        polished_draft = polish_facebook_draft(seed_data, raw_post_draft)
-    except Exception as error:
-        polished_draft = (
-            "AI-polished draft could not be generated.\n\n"
-            f"Reason: {error}"
-        )
+
+def build_facebook_draft(seed_data: dict, raw_post_draft: str, polished_draft: str) -> str:
+    year = seed_data.get("year", "Unknown year")
+    category = seed_data.get("category", "history")
+    month = seed_data.get("month", "")
+    day = seed_data.get("day", "")
+    sources = get_sources(seed_data)
+    draft_title = build_draft_title(seed_data)
 
     return f"""# {draft_title}
 
@@ -139,7 +139,7 @@ Year: {year}
 
 {raw_post_draft}
 
-## AI-Polished Facebook Draft
+## Final Facebook Post Copy
 
 {polished_draft}
 
@@ -155,6 +155,17 @@ Year: {year}
 {sources}
 """
 
+
+def build_facebook_copy_paste_post(seed_data: dict, polished_draft: str) -> str:
+    sources = get_sources(seed_data)
+
+    return f"""{polished_draft}
+
+Sources:
+{sources}
+"""
+
+
 def save_facebook_draft(seed_data: dict) -> Path:
     today = date.today().isoformat()
     description = seed_data.get("description", "facebook-draft")
@@ -163,10 +174,30 @@ def save_facebook_draft(seed_data: dict) -> Path:
     drafts_dir = Path("drafts/facebook")
     drafts_dir.mkdir(parents=True, exist_ok=True)
 
-    output_file = drafts_dir / f"{today}-{slug}.md"
-    output_file.write_text(build_facebook_draft(seed_data), encoding="utf-8")
+    review_file = drafts_dir / f"{today}-{slug}.md"
+    copy_file = drafts_dir / f"{today}-{slug}-facebook-copy.txt"
 
-    return output_file
+    raw_post_draft = build_raw_post_draft(seed_data)
+
+    try:
+        polished_draft = polish_facebook_draft(seed_data, raw_post_draft)
+    except Exception as error:
+        polished_draft = (
+            "AI-polished draft could not be generated.\n\n"
+            f"Reason: {error}"
+        )
+
+    review_file.write_text(
+        build_facebook_draft(seed_data, raw_post_draft, polished_draft),
+        encoding="utf-8",
+    )
+
+    copy_file.write_text(
+        build_facebook_copy_paste_post(seed_data, polished_draft),
+        encoding="utf-8",
+    )
+
+    return copy_file
 
 
 def main() -> None:

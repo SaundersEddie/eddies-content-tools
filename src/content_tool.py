@@ -80,6 +80,7 @@ def filter_events(events: list[dict], category: str) -> list[dict]:
 
     return matches
 
+
 def choose_event(events: list[dict]) -> dict | None:
     if not events:
         print("No matching events to choose from.")
@@ -137,6 +138,7 @@ def save_seed_file(selected_event: dict, category: str, month: int, day: int) ->
     )
 
     return output_file
+
 
 def list_seed_files() -> list[Path]:
     seeds_dir = Path("drafts/seeds")
@@ -217,6 +219,7 @@ What do you think — interesting, surprising, or one you already knew?
 
 {chr(10).join(source_lines)}
 """
+
 
 def save_facebook_draft(seed_data: dict, seed_file: Path) -> Path:
     today = date.today().isoformat()

@@ -1,201 +1,213 @@
 # eddies-content-tools
 
-A local content research and drafting toolkit for creating sourced Facebook, LinkedIn, and website content from date-based historical events, releases, and cultural milestones.
+Local Python tools for creating sourced Facebook draft posts from date-based historical and cultural events.
 
-The project is currently focused on finding useful "on this day" style content, filtering it by category, selecting a candidate item, and saving the selected source data as a reusable seed file.
+This project is currently focused on Facebook-only content drafting.
 
-This tool is not intended to auto-post content. It is designed to help collect, review, source, and draft content manually before anything is published.
+It does not auto-post, schedule posts, or publish anything. It helps research, save source data, and generate draft copy that can be reviewed before posting manually.
 
-## Current Focus
+## Current Purpose
 
-The first working flow is:
+`eddies-content-tools` helps create "On This Day" style Facebook drafts based on historical events, music history, film history, literature, science, technology, and other date-driven milestones.
 
-1. Fetch date-based historical event data.
+The current workflow is:
+
+1. Fetch date-based event data.
 2. Filter events by category.
-3. Display matching candidate items.
-4. Select one item.
-5. Save the selected item as a seed JSON file.
+3. Select an event.
+4. Save the selected event as a seed JSON file.
+5. Generate a raw factual Facebook draft.
+6. Use OpenAI to polish the Facebook post copy.
+7. Save:
+   - a review Markdown draft
+   - a clean Facebook copy/paste text file with sources
 
-The seed file becomes the source record that can later be used to generate platform-specific drafts.
+## Current Scope
 
-## Content Types
+This project is currently Facebook-only.
 
-The tool is intended to support two broad content styles:
+Out of scope for now:
 
-- Significant historical events
-- Significant releases in history
+- LinkedIn posts
+- Website posts
+- Scheduling
+- Auto-posting
+- Multi-platform content abstraction
+- Social media API publishing
 
-Examples include:
-
-- Science history
-- Music history
-- Film history
-- Literature history
-- Technology history
-- General historical events
-
-## Current Categories
-
-The current script supports rough keyword filtering for:
-
-- `music`
-- `film`
-- `science`
-- `literature`
-- `technology`
-- `history`
-
-The category filter is intentionally simple for now. It uses keyword matching to narrow down date-based event results. This will likely be improved later with stronger data sources and/or AI-based classification.
-
-## Current Features
-
-- Fetches "on this day" event data for a chosen month and day.
-- Allows selecting a category.
-- Filters candidate events using category keywords.
-- Displays matching events with year, description, source link, and matched keywords.
-- Allows choosing a result by number.
-- Saves the selected result as a JSON seed file under `drafts/seeds/`.
+The goal is to make the Facebook draft workflow genuinely useful before expanding the project.
 
 ## Project Structure
 
 ```text
 eddies-content-tools/
-  data/
-    topics/
-  drafts/
-    facebook/
-    linkedin/
-    website/
-    seeds/
-  src/
-    content_tool.py
-  templates/
-  README.md
+├── data/
+│   └── topics/
+├── drafts/
+│   ├── seeds/
+│   └── facebook/
+├── src/
+│   ├── content_tool.py
+│   ├── create_facebook_draft.py
+│   ├── openai_facebook_polisher.py
+│   └── run_content_tool.py
+├── templates/
+├── .env
+├── .gitignore
+├── README.md
+└── requirements.txt
 ```
+
+## Requirements
+
+Install dependencies with:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## Environment Variables
+
+OpenAI API access is handled with `python-dotenv`.
+
+Create a `.env` file in the project root:
+
+```env
+OPENAI=your_openai_api_key_here
+```
+
+The `.env` file should not be committed to Git.
+
+Make sure `.env` is included in `.gitignore`.
 
 ## Running the Tool
 
-From the project root:
+Use the menu runner:
 
 ```bash
-python3 src/content_tool.py
+python src/run_content_tool.py
 ```
 
-The script will ask for:
+The menu allows you to:
 
-- Month
-- Day
-- Category
+1. Create a new seed from a date and category.
+2. Create a Facebook draft from a saved seed.
+3. Run the full flow.
+4. Quit.
 
-It will then fetch matching historical events, display candidate results, and allow one item to be selected and saved as a seed file.
+## Output Files
+
+Generated files are saved under:
+
+```text
+drafts/facebook/
+```
+
+The tool currently creates two output files:
+
+### Review Markdown Draft
+
+A structured `.md` file containing:
+
+- raw factual draft
+- AI-polished Facebook copy
+- review notes
+- sources
+
+### Facebook Copy/Paste File
+
+A clean `.txt` file containing:
+
+- final Facebook post copy
+- sources
+
+This file is intended to be copied and pasted directly into Facebook.
 
 ## Seed Files
 
-Selected items are saved as JSON files in:
+Selected events are saved as JSON seed files under:
 
 ```text
 drafts/seeds/
 ```
 
-A seed file contains the selected event data, including:
+Seed files are the source-of-truth records for selected events.
 
-- Month
-- Day
-- Category
-- Year
-- Description
-- Matched keywords
-- Wikipedia/source links
+They preserve the event data and source references used to generate drafts.
 
-These seed files will later be used to generate platform-specific drafts.
+## Categories
 
-## Planned Features
+Current categories:
 
-### Draft Generation
+- history
+- music
+- film
+- science
+- literature
+- technology
 
-Generate content drafts from saved seed files for:
+Each category has its own draft blurb and engagement question style.
 
-- Facebook
-- LinkedIn
-- eddiesaunders.com
+## OpenAI Draft Polishing
 
-### AI-Assisted Drafting
+The OpenAI step takes the raw factual Facebook draft and rewrites it into a more natural Facebook-style post.
 
-Use OpenAI to turn selected source data into platform-specific draft content.
+The polished draft should:
 
-Planned AI outputs include:
+- stay factual
+- preserve the date and year
+- avoid invented details
+- avoid corporate or LinkedIn tone
+- use a conversational Facebook tone
+- include a light engagement question when appropriate
+- avoid Markdown formatting in the final post copy
 
-- Conversational Facebook posts
-- More reflective LinkedIn posts
-- Website/archive notes
-- Suggested titles
-- Suggested hashtags or tags
-- Source-check warnings
-- Missing-context warnings
+The OpenAI-generated post should still be reviewed before publishing.
 
-### Better Data Sources
+## Important Notes
 
-The current version uses date-based historical event data as a starting point.
+This tool creates drafts, not final truth.
 
-Possible future sources include:
+Always review:
 
-- Wikimedia/Wikipedia data
-- Wikidata
-- MusicBrainz for music release metadata
-- Film metadata sources
-- Book/literature metadata sources
+- event accuracy
+- date accuracy
+- source quality
+- wording
+- regional release differences for music, film, books, and similar cultural events
 
-## Platform Goals
+Country and region may matter for release-date-based posts.
 
-### Facebook
+## Git Safety
 
-Facebook drafts should be:
-
-- Conversational
-- Interesting
-- Easy to read
-- Slightly nostalgic when appropriate
-- End with a question or engagement prompt
-
-### LinkedIn
-
-LinkedIn drafts should be:
-
-- More reflective
-- Less casual
-- Connected to creativity, learning, process, tools, technology, or building useful things
-- Avoid corporate cringe
-
-### eddiesaunders.com
-
-Website drafts should be:
-
-- More archival
-- Source-aware
-- Useful as future notes or reference material
-- Tagged and organized for long-term browsing
-
-## Guiding Principles
-
-- Fetch the data first.
-- Keep sources.
-- Save selected items before generating posts.
-- Generate drafts, not final truth.
-- Review before publishing.
-- Build one brick at a time.
-
-## Current Milestone
-
-The current milestone is complete:
+Do not commit:
 
 ```text
-Fetch -> filter -> select -> save seed JSON
+.env
 ```
 
-The next milestone is:
+Recommended `.gitignore` entries:
+
+```gitignore
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+```
+
+## Current Status
+
+Current working milestone:
 
 ```text
-Saved seed JSON -> basic Facebook draft
+Fetch event -> filter by category -> select event -> save seed JSON -> generate Facebook draft -> polish with OpenAI -> save review and copy/paste files
 ```
 
-After that, AI-assisted draft generation can be added on top of the saved seed workflow.
+Next likely improvements:
+
+- automatically use the seed just created in the full-flow menu
+- improve source display formatting
+- improve category filtering
+- add better validation around missing source data
