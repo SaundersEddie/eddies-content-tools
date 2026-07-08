@@ -2,6 +2,7 @@ from datetime import date
 from pathlib import Path
 import json
 import re
+from openai_facebook_polisher import polish_facebook_draft
 
 CATEGORY_BLURBS = {
     "history": "This is one of those moments where a single event helped shape what came next.",
@@ -112,6 +113,20 @@ def build_facebook_draft(seed_data: dict) -> str:
         "What do you think — interesting, surprising, or one you already knew?",
     )
 
+    raw_post_draft = f"""On this day in {year}, {description}.
+
+{blurb}
+
+{question}"""
+
+    try:
+        polished_draft = polish_facebook_draft(seed_data, raw_post_draft)
+    except Exception as error:
+        polished_draft = (
+            "AI-polished draft could not be generated.\n\n"
+            f"Reason: {error}"
+        )
+
     return f"""# {draft_title}
 
 Status: Draft
@@ -120,25 +135,25 @@ Category: {category}
 Historical Date: {month}/{day}
 Year: {year}
 
-## Post Draft
+## Raw Factual Draft
 
-On this day in {year}, {description}.
+{raw_post_draft}
 
-{blurb}
+## AI-Polished Facebook Draft
 
-{question}
+{polished_draft}
 
 ## Review Notes
 
 - Verify the date and event details before posting.
 - Check whether the source is strong enough.
 - Rewrite the post in your own voice before publishing.
+- Review the AI-polished draft before publishing.
 
 ## Sources
 
 {sources}
 """
-
 
 def save_facebook_draft(seed_data: dict) -> Path:
     today = date.today().isoformat()
