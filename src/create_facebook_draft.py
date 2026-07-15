@@ -2,25 +2,54 @@ from datetime import date
 from pathlib import Path
 import json
 import re
+
 from openai_facebook_polisher import polish_facebook_draft
 
+
 CATEGORY_BLURBS = {
-    "history": "This is one of those moments where a single event helped shape what came next.",
-    "music": "This is one of those music-history moments that still echoes through playlists, radio, record collections, and arguments between music fans.",
-    "film": "This is the kind of film-history moment that helped shape what audiences watched, talked about, or expected from the screen.",
-    "science": "A good reminder that discovery is usually built one hard-won step at a time.",
-    "literature": "Literature has a funny way of outliving its moment, and some works or writers keep finding new readers long after the original date.",
-    "technology": "Tech history moves fast, but some milestones still stand out because they changed what people could build, use, or imagine.",
+    "history": (
+        "This is one of those moments where a single event helped shape "
+        "what came next."
+    ),
+    "music": (
+        "This is one of those music-history moments that still echoes through "
+        "playlists, radio, record collections, and arguments between music fans."
+    ),
+    "film": (
+        "This is the kind of film-history moment that helped shape what "
+        "audiences watched, talked about, or expected from the screen."
+    ),
+    "science": (
+        "A good reminder that discovery is usually built one hard-won step "
+        "at a time."
+    ),
+    "literature": (
+        "Literature has a funny way of outliving its moment, and some works "
+        "or writers keep finding new readers long after the original date."
+    ),
+    "technology": (
+        "Tech history moves fast, but some milestones still stand out because "
+        "they changed what people could build, use, or imagine."
+    ),
 }
 
 
 CATEGORY_QUESTIONS = {
     "history": "Did you already know this one, or is this a new rabbit hole?",
-    "music": "Is this one still in your rotation, or is it more of a music-history footnote for you?",
+    "music": (
+        "Is this one still in your rotation, or is it more of a "
+        "music-history footnote for you?"
+    ),
     "film": "Have you seen this one, or is it going on the watch list?",
     "science": "What scientific discovery or invention still blows your mind?",
-    "literature": "Is this one on your shelf, your reading list, or your 'maybe someday' pile?",
-    "technology": "What old piece of tech do you think changed the world more than people realize?",
+    "literature": (
+        "Is this one on your shelf, your reading list, or your "
+        "'maybe someday' pile?"
+    ),
+    "technology": (
+        "What old piece of tech do you think changed the world more than "
+        "people realize?"
+    ),
 }
 
 
@@ -50,7 +79,9 @@ def choose_seed_file(seed_files: list[Path]) -> Path | None:
         print(f"{index}. {seed_file.name}")
 
     while True:
-        choice = input("\nChoose a seed file number, or press Enter to cancel: ").strip()
+        choice = input(
+            "\nChoose a seed file number, or press Enter to cancel: "
+        ).strip()
 
         if not choice:
             return None
@@ -87,7 +118,10 @@ def get_sources(seed_data: dict) -> str:
 
 def build_draft_title(seed_data: dict) -> str:
     year = seed_data.get("year", "Unknown year")
-    description = seed_data.get("description", "Untitled event").rstrip(".")
+    description = seed_data.get(
+        "description",
+        "Untitled event",
+    ).rstrip(".")
 
     max_length = 70
 
@@ -99,7 +133,10 @@ def build_draft_title(seed_data: dict) -> str:
 
 def build_raw_post_draft(seed_data: dict) -> str:
     year = seed_data.get("year", "Unknown year")
-    description = seed_data.get("description", "No description available.").rstrip(".")
+    description = seed_data.get(
+        "description",
+        "No description available.",
+    ).rstrip(".")
     category = seed_data.get("category", "history")
 
     blurb = CATEGORY_BLURBS.get(
@@ -119,13 +156,26 @@ def build_raw_post_draft(seed_data: dict) -> str:
 {question}"""
 
 
-def build_facebook_draft(seed_data: dict, raw_post_draft: str, polished_draft: str) -> str:
+def build_facebook_draft(
+    seed_data: dict,
+    raw_post_draft: str,
+    polished_draft: str,
+    polish_error: str | None = None,
+) -> str:
     year = seed_data.get("year", "Unknown year")
     category = seed_data.get("category", "history")
     month = seed_data.get("month", "")
     day = seed_data.get("day", "")
     sources = get_sources(seed_data)
     draft_title = build_draft_title(seed_data)
+
+    ai_status = "OpenAI polishing completed successfully."
+
+    if polish_error:
+        ai_status = (
+            "OpenAI polishing failed. The raw factual draft was used as the "
+            f"Facebook copy.\n\nError: {polish_error}"
+        )
 
     return f"""# {draft_title}
 
@@ -139,9 +189,9 @@ Year: {year}
 
 {raw_post_draft}
 
-## Final Facebook Post Copy
+## AI Processing Status
 
-{polished_draft}
+{ai_status}
 
 ## Review Notes
 
@@ -150,18 +200,28 @@ Year: {year}
 - Rewrite the post in your own voice before publishing.
 - Review the AI-polished draft before publishing.
 
-## Sources
+---
+
+## Final Facebook Post Copy
+
+{polished_draft}
+
+Sources:
 
 {sources}
 """
 
 
-def build_facebook_copy_paste_post(seed_data: dict, polished_draft: str) -> str:
+def build_facebook_copy_paste_post(
+    seed_data: dict,
+    post_draft: str,
+) -> str:
     sources = get_sources(seed_data)
 
-    return f"""{polished_draft}
+    return f"""{post_draft.strip()}
 
 Sources:
+
 {sources}
 """
 
@@ -178,22 +238,32 @@ def save_facebook_draft(seed_data: dict) -> Path:
     copy_file = drafts_dir / f"{today}-{slug}-facebook-copy.txt"
 
     raw_post_draft = build_raw_post_draft(seed_data)
+    polish_error = None
 
     try:
-        polished_draft = polish_facebook_draft(seed_data, raw_post_draft)
-    except Exception as error:
-        polished_draft = (
-            "AI-polished draft could not be generated.\n\n"
-            f"Reason: {error}"
+        polished_draft = polish_facebook_draft(
+            seed_data,
+            raw_post_draft,
         )
+    except Exception as error:
+        polish_error = str(error)
+        polished_draft = raw_post_draft
 
     review_file.write_text(
-        build_facebook_draft(seed_data, raw_post_draft, polished_draft),
+        build_facebook_draft(
+            seed_data,
+            raw_post_draft,
+            polished_draft,
+            polish_error,
+        ),
         encoding="utf-8",
     )
 
     copy_file.write_text(
-        build_facebook_copy_paste_post(seed_data, polished_draft),
+        build_facebook_copy_paste_post(
+            seed_data,
+            polished_draft,
+        ),
         encoding="utf-8",
     )
 
@@ -219,4 +289,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-    

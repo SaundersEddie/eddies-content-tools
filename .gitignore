@@ -8,3 +8,25 @@ __pycache__/
 drafts/facebook/*.md
 drafts/linkedin/*.md
 drafts/website/*.md
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# Operating system files
+.DS_Store
+
+# Generated seeds
+drafts/seeds/*.json
+
+# Generated Facebook drafts
+drafts/facebook/*.md
+drafts/facebook/*.txt
+
+# Inactive legacy output folders
+drafts/linkedin/*
+drafts/website/*

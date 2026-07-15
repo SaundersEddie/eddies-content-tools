@@ -42,7 +42,7 @@ def polish_facebook_draft(seed_data, raw_draft):
     client = get_openai_client()
 
     year = seed_data.get("year", "Unknown year")
-    event = seed_data.get("text", "")
+    event = seed_data.get("description", "")
     category = seed_data.get("category", "history")
 
     prompt = f"""

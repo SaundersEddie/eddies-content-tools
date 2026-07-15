@@ -1,41 +1,180 @@
-# eddies-content-tools
+The existing README has the right information, but it reads more like development notes than a finished public project page. This version tightens it up, puts setup first, clearly explains that users need their **own OpenAI API key**, and keeps the project scope honest.
 
-Local Python tools for creating sourced Facebook draft posts from date-based historical and cultural events.
+I have left one obvious placeholder for your PayPal link because I’m not going to guess where people should send the coffee money. ☕
 
-This project is currently focused on Facebook-only content drafting.
+# Eddie’s Content Tools
 
-It does not auto-post, schedule posts, or publish anything. It helps research, save source data, and generate draft copy that can be reviewed before posting manually.
+A local Python tool for researching date-based events and creating sourced Facebook post drafts.
 
-## Current Purpose
+The tool finds historical and cultural events for a selected date, filters the results by category, saves the selected event and its sources, and uses OpenAI to turn the factual seed into a more natural Facebook post draft.
 
-`eddies-content-tools` helps create "On This Day" style Facebook drafts based on historical events, music history, film history, literature, science, technology, and other date-driven milestones.
+It does not automatically publish or schedule anything. Every generated post is intended to be reviewed before being copied into Facebook.
 
-The current workflow is:
+Project repository:
 
-1. Fetch date-based event data.
-2. Filter events by category.
-3. Select an event.
-4. Save the selected event as a seed JSON file.
-5. Generate a raw factual Facebook draft.
-6. Use OpenAI to polish the Facebook post copy.
-7. Save:
-   - a review Markdown draft
-   - a clean Facebook copy/paste text file with sources
+[https://github.com/SaundersEddie/eddies-content-tools](https://github.com/SaundersEddie/eddies-content-tools)
+
+Created by Eddie Saunders:
+
+[https://eddiesaunders.com](https://eddiesaunders.com)
+
+## Features
+
+* Fetch date-based historical and cultural events.
+* Filter results by category.
+* Display matching candidate events.
+* Select an event from the results.
+* Save the selected event as a JSON seed file.
+* Preserve source links for later review.
+* Generate a raw factual Facebook draft.
+* Use OpenAI to polish the wording.
+* Create a structured Markdown review file.
+* Create a clean Facebook copy/paste text file.
+* Fall back to the raw factual draft if OpenAI polishing fails.
+
+## Current Categories
+
+The current category filters are:
+
+* History
+* Music
+* Film
+* Science
+* Literature
+* Technology
+
+Category filtering is keyword-based, so results should still be reviewed before use.
 
 ## Current Scope
 
-This project is currently Facebook-only.
+This version is deliberately focused on Facebook drafting.
 
-Out of scope for now:
+The following features are not currently included:
 
-- LinkedIn posts
-- Website posts
-- Scheduling
-- Auto-posting
-- Multi-platform content abstraction
-- Social media API publishing
+* LinkedIn posts
+* Website articles
+* Post scheduling
+* Automatic publishing
+* Facebook API integration
+* Multi-platform content generation
+* Social-media account management
 
-The goal is to make the Facebook draft workflow genuinely useful before expanding the project.
+The goal is to keep the Facebook workflow useful and understandable before adding more platforms or automation.
+
+## How It Works
+
+The current workflow is:
+
+1. Enter a month and day.
+2. Select a category.
+3. Fetch date-based event data.
+4. Review matching candidate events.
+5. Select one event.
+6. Save the event and its sources as a seed JSON file.
+7. Generate a raw factual Facebook draft.
+8. Send the draft to OpenAI for conversational polishing.
+9. Save a review Markdown file.
+10. Save a Facebook copy/paste text file.
+
+The generated content should always be treated as a draft rather than final truth.
+
+## Requirements
+
+You will need:
+
+* Python 3.10 or newer
+* An internet connection
+* Your own OpenAI API key
+* An OpenAI API account with available API credit or billing
+
+This project does not include an API key.
+
+Each user must create and pay for their own OpenAI API usage.
+
+OpenAI API keys can be managed here:
+
+[https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+
+OpenAI API usage is separate from a ChatGPT subscription. Having a ChatGPT account or paid ChatGPT plan does not automatically provide API credit.
+
+## Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/SaundersEddie/eddies-content-tools.git
+```
+
+Move into the project directory:
+
+```bash
+cd eddies-content-tools
+```
+
+Optional but recommended: create a virtual environment.
+
+### macOS or Linux
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Windows PowerShell
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+Install the required Python packages:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+## OpenAI API Key Setup
+
+Create a file named `.env` in the project root.
+
+Add your OpenAI API key using the following variable name:
+
+```env
+OPENAI=your_openai_api_key_here
+```
+
+The expected environment variable is:
+
+```text
+OPENAI
+```
+
+Do not place quotation marks around the key unless your local environment specifically requires them.
+
+Do not commit the `.env` file to GitHub or share it publicly.
+
+The project uses `python-dotenv` to load the key locally.
+
+## Running the Tool
+
+Run the menu application from the project root:
+
+```bash
+python src/run_content_tool.py
+```
+
+Depending on your Python installation, you may need:
+
+```bash
+python3 src/run_content_tool.py
+```
+
+The menu currently provides the following options:
+
+1. Create a new event seed.
+2. Create a Facebook draft from a saved seed.
+3. Run the complete seed and draft workflow.
+4. Quit.
 
 ## Project Structure
 
@@ -58,156 +197,202 @@ eddies-content-tools/
 └── requirements.txt
 ```
 
-## Requirements
-
-Install dependencies with:
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-## Environment Variables
-
-OpenAI API access is handled with `python-dotenv`.
-
-Create a `.env` file in the project root:
-
-```env
-OPENAI=your_openai_api_key_here
-```
-
-The `.env` file should not be committed to Git.
-
-Make sure `.env` is included in `.gitignore`.
-
-## Running the Tool
-
-Use the menu runner:
-
-```bash
-python src/run_content_tool.py
-```
-
-The menu allows you to:
-
-1. Create a new seed from a date and category.
-2. Create a Facebook draft from a saved seed.
-3. Run the full flow.
-4. Quit.
-
-## Output Files
-
-Generated files are saved under:
-
-```text
-drafts/facebook/
-```
-
-The tool currently creates two output files:
-
-### Review Markdown Draft
-
-A structured `.md` file containing:
-
-- raw factual draft
-- AI-polished Facebook copy
-- review notes
-- sources
-
-### Facebook Copy/Paste File
-
-A clean `.txt` file containing:
-
-- final Facebook post copy
-- sources
-
-This file is intended to be copied and pasted directly into Facebook.
+The `.env` file is created locally and should never be committed.
 
 ## Seed Files
 
-Selected events are saved as JSON seed files under:
+Selected events are saved as JSON files under:
 
 ```text
 drafts/seeds/
 ```
 
-Seed files are the source-of-truth records for selected events.
+A seed file contains information such as:
 
-They preserve the event data and source references used to generate drafts.
+* Month
+* Day
+* Year
+* Category
+* Event description
+* Matched category keywords
+* Source titles
+* Source links
 
-## Categories
+The seed JSON file acts as the local source-of-truth record for the selected event.
 
-Current categories:
+## Generated Facebook Files
 
-- history
-- music
-- film
-- science
-- literature
-- technology
+Generated drafts are saved under:
 
-Each category has its own draft blurb and engagement question style.
+```text
+drafts/facebook/
+```
 
-## OpenAI Draft Polishing
+The tool creates two output files.
 
-The OpenAI step takes the raw factual Facebook draft and rewrites it into a more natural Facebook-style post.
+### Review Markdown File
 
-The polished draft should:
+The Markdown review file contains:
 
-- stay factual
-- preserve the date and year
-- avoid invented details
-- avoid corporate or LinkedIn tone
-- use a conversational Facebook tone
-- include a light engagement question when appropriate
-- avoid Markdown formatting in the final post copy
+* Event metadata
+* Raw factual draft
+* OpenAI processing status
+* Review notes
+* Final Facebook post copy
+* Source links
 
-The OpenAI-generated post should still be reviewed before publishing.
+The final post and its sources are grouped together at the bottom of the document for easy review and copying.
 
-## Important Notes
+### Facebook Copy/Paste File
+
+The text file contains:
+
+* Final Facebook post copy
+* Source links
+
+This provides one simple block that can be reviewed and copied without searching through the full Markdown document.
+
+## OpenAI Polishing
+
+The OpenAI step rewrites the raw factual draft into a more natural Facebook post.
+
+The prompt instructs the model to:
+
+* Keep the event factual.
+* Preserve the year and core event.
+* Avoid invented details.
+* Use conversational language.
+* Avoid corporate or LinkedIn-style wording.
+* Avoid academic writing.
+* Keep the post reasonably short.
+* Add a light engagement question when appropriate.
+* Return plain text rather than Markdown.
+* Avoid placing source links inside the public-facing post text.
+
+If OpenAI polishing fails, the tool uses the raw factual draft as the fallback Facebook copy.
+
+The failure reason is recorded in the Markdown review file.
+
+## Source Handling
+
+Sources are preserved locally so the event can be checked before publication.
+
+The current event provider may return Wikipedia links and related source information. Those links are retained in:
+
+* The seed JSON file
+* The Markdown review file
+* The Facebook copy/paste text file
+
+Sources should still be evaluated for quality.
+
+A source link being present does not automatically mean every detail in the event description is complete, current, or correct.
+
+## Review Before Publishing
 
 This tool creates drafts, not final truth.
 
-Always review:
+Before publishing, check:
 
-- event accuracy
-- date accuracy
-- source quality
-- wording
-- regional release differences for music, film, books, and similar cultural events
+* The event date
+* The event year
+* Names and spellings
+* The factual wording
+* Source quality
+* Regional release dates
+* Whether the event fits the selected category
+* Whether the engagement question makes sense
+* Whether the finished post sounds like you
 
-Country and region may matter for release-date-based posts.
+Regional differences can be especially important for:
 
-## Git Safety
+* Album releases
+* Song releases
+* Film premieres
+* Book publication dates
+* Product launches
+* Technology releases
 
-Do not commit:
+## Privacy and Security
+
+Your OpenAI API key is loaded from your local `.env` file.
+
+Do not:
+
+* Commit `.env`
+* Paste your API key into source files
+* Upload your key in screenshots
+* Share the key in support requests
+* Include the key in generated drafts
+* Publish the key in a fork or pull request
+
+If a key is accidentally exposed, revoke it through your OpenAI account and create a new one.
+
+## Known Limitations
+
+* Category filtering is based on keywords.
+* Source data may use awkward historical present-tense wording.
+* Source results may be incomplete.
+* Cultural release dates may vary by country or region.
+* AI-polished copy may still contain mistakes.
+* The full-flow menu may still require selecting the newly created seed manually.
+* The tool does not independently verify every factual claim.
+* Generated files must be reviewed before publication.
+
+## Development Status
+
+The core Facebook workflow is operational:
 
 ```text
-.env
+Fetch event
+-> Filter by category
+-> Select event
+-> Save seed JSON
+-> Generate factual draft
+-> Polish with OpenAI
+-> Save review file
+-> Save Facebook copy file
 ```
 
-Recommended `.gitignore` entries:
+The project is considered a usable local drafting tool, although category filtering, validation, source presentation, and workflow convenience can still be improved.
 
-```gitignore
-.env
-__pycache__/
-*.pyc
-.venv/
-venv/
-.DS_Store
-```
+## Contributing
 
-## Current Status
+Bug reports, suggestions, and improvements are welcome through the GitHub repository:
 
-Current working milestone:
+[https://github.com/SaundersEddie/eddies-content-tools](https://github.com/SaundersEddie/eddies-content-tools)
 
-```text
-Fetch event -> filter by category -> select event -> save seed JSON -> generate Facebook draft -> polish with OpenAI -> save review and copy/paste files
-```
+Please keep proposed changes aligned with the current Facebook-first scope.
 
-Next likely improvements:
+Large multi-platform abstractions, automatic publishing systems, and scheduling features are intentionally outside the current project direction.
 
-- automatically use the seed just created in the full-flow menu
-- improve source display formatting
-- improve category filtering
-- add better validation around missing source data
+## Support the Project
+
+This project is free to use.
+
+If it saves you some time and you would like to buy me a coffee, you can send a small PayPal donation here:
+
+PAYPAL_LINK_GOES_HERE
+
+No pressure. The code still works without caffeine, although the developer may not.
+
+## Author
+
+Created by Eddie Saunders.
+
+Website:
+
+[https://eddiesaunders.com](https://eddiesaunders.com)
+
+GitHub repository:
+
+[https://github.com/SaundersEddie/eddies-content-tools](https://github.com/SaundersEddie/eddies-content-tools)
+
+## Support the Project
+
+This project is free to use.
+
+If it saves you some time and you would like to buy me a coffee, you can send a small PayPal donation here:
+
+http://paypal.me/edwynsaunders1
+
+No pressure. The code still works without caffeine, although the developer may not.
