@@ -365,16 +365,6 @@ Please keep proposed changes aligned with the current Facebook-first scope.
 
 Large multi-platform abstractions, automatic publishing systems, and scheduling features are intentionally outside the current project direction.
 
-## Support the Project
-
-This project is free to use.
-
-If it saves you some time and you would like to buy me a coffee, you can send a small PayPal donation here:
-
-PAYPAL_LINK_GOES_HERE
-
-No pressure. The code still works without caffeine, although the developer may not.
-
 ## Author
 
 Created by Eddie Saunders.
